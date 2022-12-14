@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -8,8 +8,10 @@ module.exports = {
             option.setName('feature')
             .setDescription('Feature that this channel will serve')
             .setRequired(true)
-            .addChoice('Quotes', 'Quotes')
-            .addChoice('Soundboard', 'Soundboard')
+            .addChoices(
+                { name: 'Quotes', value: 'Quotes' },
+                { name: 'Soundboard', value: 'Soundboard' },
+            )
         )
         .addChannelOption(option =>
             option.setName('channel')

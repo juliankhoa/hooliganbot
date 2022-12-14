@@ -1,7 +1,7 @@
 // Importing modules
 require('dotenv').config()
-const   Discord = require('discord.js'),
-        mongoose = require('mongoose'),
+const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
+const   mongoose = require('mongoose'),
         fs = require('fs'),
         util = require('util'),
         readdir = util.promisify(fs.readdir);
@@ -10,17 +10,17 @@ const   { REST } = require('@discordjs/rest'),
         { Routes } = require('discord-api-types/v9'),
         { addSpeechEvent } = require('discord-speech-recognition');
 
-client = new Discord.Client({ intents: ['GUILDS', 
-                                        'GUILD_MEMBERS',
-                                        'GUILD_PRESENCES',
-                                        'GUILD_VOICE_STATES',
-                                        'GUILD_MESSAGES']
+client = new Client({ intents: [GatewayIntentBits.Guilds, 
+                                GatewayIntentBits.GuildMembers,
+                                GatewayIntentBits.GuildPresences,
+                                GatewayIntentBits.GuildVoiceStates,
+                                GatewayIntentBits.GuildMessages]
                             });
 addSpeechEvent(client, { profanityFilter: false });
 
 // Adding to the client
-client.event = new Discord.Collection();
-client.commands = new Discord.Collection();
+client.event = new Collection();
+client.commands = new Collection();
 client.database = require('./database/mongoose.js');
 client.tools = require('./tools/tools.js');
 client.logger = require('./tools/logger.js');
@@ -42,17 +42,17 @@ async function initBot() {
     client.logger.load('Loading slash commands...');
     const restCommands = [];
     let folders = await readdir('./commands/');
-    folders.forEach(direct => {
-        const commandFiles = fs.readdirSync('./commands/' + direct + '/').filter(file => file.endsWith('.js'));
+    folders.forEach(subDir => {
+        const commandFiles = fs.readdirSync('./commands/' + subDir + '/').filter(file => file.endsWith('.js'));
         for (const file of commandFiles) {
-            const command = require(`./commands/${direct}/${file}`);
+            const command = require(`./commands/${subDir}/${file}`);
             client.commands.set(command.data.name, command);
             restCommands.push(command.data.toJSON());
             console.log(`\t+ ${command.data.name}`);
         }
     })
 
-    const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_BOT_TOKEN);
+    const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
     (async () => {
         try {
             await rest.put(
